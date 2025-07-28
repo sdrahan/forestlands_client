@@ -4,10 +4,11 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.spritesheet('tiles', './assets/tiles.png', {
-            frameWidth: 64,
-            frameHeight: 64
-        });
+        this.load.atlas(
+            'tileset',
+            './assets/spritesheet.png',
+            './assets/spritesheet.json'
+        );
     }
 
     create() {
@@ -23,11 +24,10 @@ export default class BoardScene extends Phaser.Scene {
 
         for (let row = 0; row < boardHeight; row++) {
             for (let col = 0; col < boardWidth; col++) {
-                // Isometric projection
                 const x = (col - row) * tileWidth / 2 + offsetX;
                 const y = (col + row) * tileHeight / 2 + offsetY;
 
-                this.add.image(x, y, 'tiles', 0);
+                this.add.image(x, y, 'tileset', 'landscapeTiles_067.png');
             }
         }
     }

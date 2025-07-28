@@ -1,0 +1,146 @@
+{
+	"textures": [
+		{
+			"image": "landscape_tilesheet.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 804,
+				"h": 101
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "landscapeTiles_059.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 132,
+						"h": 99
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 132,
+						"h": 99
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 132,
+						"h": 99
+					}
+				},
+				{
+					"filename": "landscapeTiles_067.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 132,
+						"h": 99
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 132,
+						"h": 99
+					},
+					"frame": {
+						"x": 135,
+						"y": 1,
+						"w": 132,
+						"h": 99
+					}
+				},
+				{
+					"filename": "landscapeTiles_075.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 132,
+						"h": 99
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 132,
+						"h": 99
+					},
+					"frame": {
+						"x": 269,
+						"y": 1,
+						"w": 132,
+						"h": 99
+					}
+				},
+				{
+					"filename": "landscapeTiles_083.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 132,
+						"h": 99
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 132,
+						"h": 99
+					},
+					"frame": {
+						"x": 403,
+						"y": 1,
+						"w": 132,
+						"h": 99
+					}
+				},
+				{
+					"filename": "landscapeTiles_066.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 132,
+						"h": 83
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 132,
+						"h": 83
+					},
+					"frame": {
+						"x": 537,
+						"y": 1,
+						"w": 132,
+						"h": 83
+					}
+				},
+				{
+					"filename": "landscapeTiles_073.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 132,
+						"h": 83
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 132,
+						"h": 83
+					},
+					"frame": {
+						"x": 671,
+						"y": 1,
+						"w": 132,
+						"h": 83
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:8fb481742a31dd7c62118cf081845890:fea40f3a3bb772269365795e580f8757:5bd33a58c898af52d0cbb5dc901dba58$"
+	}
+}
