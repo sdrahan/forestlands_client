@@ -50,7 +50,7 @@
         <key>dxtCompressionMode</key>
         <enum type="SettingsBase::DxtCompressionMode">DXT_PERCEPTUAL</enum>
         <key>ditherType</key>
-        <enum type="SettingsBase::DitherType">NearestNeighbour</enum>
+        <enum type="SettingsBase::DitherType">Linear</enum>
         <key>backgroundColor</key>
         <uint>0</uint>
         <key>libGdx</key>
@@ -94,7 +94,7 @@
         <key>algorithmSettings</key>
         <struct type="AlgorithmSettings">
             <key>algorithm</key>
-            <enum type="AlgorithmSettings::AlgorithmId">MaxRects</enum>
+            <enum type="AlgorithmSettings::AlgorithmId">Grid</enum>
             <key>freeSizeMode</key>
             <enum type="AlgorithmSettings::AlgorithmFreeSizeMode">Best</enum>
             <key>sizeConstraints</key>
@@ -155,13 +155,13 @@
             <key>scaleMode</key>
             <enum type="ScaleMode">Smooth</enum>
             <key>extrude</key>
-            <uint>1</uint>
+            <uint>0</uint>
             <key>trimThreshold</key>
             <uint>1</uint>
             <key>trimMargin</key>
             <uint>1</uint>
             <key>trimMode</key>
-            <enum type="SpriteSettings::TrimMode">Trim</enum>
+            <enum type="SpriteSettings::TrimMode">None</enum>
             <key>tracerTolerance</key>
             <int>200</int>
             <key>heuristicMask</key>
@@ -173,10 +173,9 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
-            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_059.png</key>
-            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_067.png</key>
-            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_075.png</key>
-            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_083.png</key>
+            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/beach.png</key>
+            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/dirtDouble.png</key>
+            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/grass.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -185,14 +184,13 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>33,25,66,49</rect>
+                <rect>25,16,50,33</rect>
                 <key>scale9Paddings</key>
-                <rect>33,25,66,49</rect>
+                <rect>25,16,50,33</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_066.png</key>
-            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_073.png</key>
+            <key type="filename">../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/water.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -201,9 +199,9 @@
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
-                <rect>33,21,66,41</rect>
+                <rect>25,15,50,29</rect>
                 <key>scale9Paddings</key>
-                <rect>33,21,66,41</rect>
+                <rect>25,15,50,29</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -214,12 +212,10 @@
             <struct type="SpriteSheet">
                 <key>files</key>
                 <array>
-                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_059.png</filename>
-                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_066.png</filename>
-                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_067.png</filename>
-                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_073.png</filename>
-                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_075.png</filename>
-                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Tiles Base/PNG/landscapeTiles_083.png</filename>
+                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/grass.png</filename>
+                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/beach.png</filename>
+                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/dirtDouble.png</filename>
+                    <filename>../../../temp/Kenney Game Assets All-in-1 3.0.0/2D assets/Isometric Vector Roads Base/PNG/water.png</filename>
                 </array>
             </struct>
         </map>
