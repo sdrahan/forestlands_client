@@ -97,6 +97,16 @@ export default class BoardScene extends Phaser.Scene {
             camera.scrollX -= newWorldPoint.x - worldPoint.x;
             camera.scrollY -= newWorldPoint.y - worldPoint.y;
         });
+
+        let treeCoords = this.getTileCoordsForTree(0, 0);
+        let tree1 = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet','75_4.png');
+        treeCoords = this.getTileCoordsForTree(0, 2);
+        let tree2 = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet','106_4.png');
+        // const graphics = this.add.graphics({ fillStyle: { color: 0xff0000 } });
+        // graphics.fillCircle(treeCoords.x, treeCoords.y, 10);
+        // graphics.fillCircle(0, 0, 10);
+        treeCoords = this.getTileCoordsForTree(4, 4);
+        let tree3 = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet','0_7.png');
     }
 
     update (time, delta)
@@ -107,5 +117,14 @@ export default class BoardScene extends Phaser.Scene {
             const tile = this.baseLayer.getIsoTileAtWorldXY(worldPoint.x, worldPoint.y);
             console.log(worldPoint.x, worldPoint.y, tile);
         }
+    }
+
+    getTileCoordsForTree (tileX, tileY)
+    {
+        const treeOffsetX = 50;
+        const treeOffsetY = -10;
+        let tileWorldCoordsXY = this.baseLayer.tileToWorldXY(tileX, tileY);
+        console.log("Planting tree at coords: " + tileWorldCoordsXY.x + ", " + tileWorldCoordsXY.y);
+        return { x: tileWorldCoordsXY.x + treeOffsetX, y: tileWorldCoordsXY.y + treeOffsetY };
     }
 }
