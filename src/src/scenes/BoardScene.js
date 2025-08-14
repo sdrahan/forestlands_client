@@ -1,3 +1,5 @@
+import GameState from '../managers/GameStateManager.js';
+
 export default class BoardScene extends Phaser.Scene {
     constructor() {
         super('BoardScene');
@@ -6,6 +8,9 @@ export default class BoardScene extends Phaser.Scene {
     map;
     baseLayer;
     lastHoveredTile;
+    selectedTree = null;
+    previewSprite = null;
+    cameraIsBeingScrolled = false;
 
     preload() {
         this.load.atlas(
@@ -59,14 +64,23 @@ export default class BoardScene extends Phaser.Scene {
 
             if (tile !== this.lastHoveredTile) {
                 if (this.lastHoveredTile) {
-                    this.lastHoveredTile.setAlpha(1);
+                    // this.lastHoveredTile.setAlpha(1);
                 }
                 if (tile) {
-                    tile.setAlpha(0.7);
+                    // tile.setAlpha(0.7);
                 }
                 this.lastHoveredTile = tile;
             }
         });
+
+        this.selectedTree = GameState.getTreeInventory()[0];
+
+        if (this.selectedTree) {
+            this.previewSprite = this.add.image(0, 0, 'spritesheet', this.selectedTree.specie + '_4.png');
+            this.previewSprite.setAlpha(0.5);
+            this.previewSprite.setDepth(999); // always on top
+            this.previewSprite.setVisible(false);
+        }
 
         const camera = this.cameras.main;
         let cameraDragStartX;
@@ -79,9 +93,27 @@ export default class BoardScene extends Phaser.Scene {
 
         this.input.on('pointermove', (pointer) => {
             if (pointer.isDown) {
-                camera.scrollX = cameraDragStartX + (pointer.downX - pointer.x) / camera.zoom;
-                camera.scrollY = cameraDragStartY + (pointer.downY - pointer.y) / camera.zoom;
+                let scrollX = cameraDragStartX + (pointer.downX - pointer.x) / camera.zoom;
+                let scrollY = cameraDragStartY + (pointer.downY - pointer.y) / camera.zoom;
+                camera.scrollX = scrollX;
+                camera.scrollY = scrollY;
+
+                if (scrollX !== 0 || scrollY !== 0) {
+                    this.cameraIsBeingScrolled = true;
+                }
             }
+
+            const worldPoint = pointer.positionToCamera(this.cameras.main);
+            const tile = this.baseLayer.getIsoTileAtWorldXY(worldPoint.x, worldPoint.y);
+
+            if (!tile || !this.selectedTree || GameState.getTreeAt(tile.x, tile.y)) {
+                if (this.previewSprite) this.previewSprite.setVisible(false);
+                return;
+            }
+
+            const coords = this.getTileCoordsForTree(tile.x, tile.y);
+            this.previewSprite.setPosition(coords.x, coords.y);
+            this.previewSprite.setVisible(true);
         });
 
         this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
@@ -98,25 +130,65 @@ export default class BoardScene extends Phaser.Scene {
             camera.scrollY -= newWorldPoint.y - worldPoint.y;
         });
 
-        let treeCoords = this.getTileCoordsForTree(0, 0);
-        let tree1 = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet','75_4.png');
-        treeCoords = this.getTileCoordsForTree(0, 2);
-        let tree2 = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet','106_4.png');
-        // const graphics = this.add.graphics({ fillStyle: { color: 0xff0000 } });
-        // graphics.fillCircle(treeCoords.x, treeCoords.y, 10);
-        // graphics.fillCircle(0, 0, 10);
-        treeCoords = this.getTileCoordsForTree(4, 4);
-        let tree3 = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet','0_7.png');
+        this.input.on('pointerup', (pointer) => {
+            if (this.cameraIsBeingScrolled) {
+                this.cameraIsBeingScrolled = false;
+                return;
+            }
+
+            const worldPoint = pointer.positionToCamera(this.cameras.main);
+            const tile = this.baseLayer.getIsoTileAtWorldXY(worldPoint.x, worldPoint.y);
+            if (!tile) return;
+
+            const x = tile.x;
+            const y = tile.y;
+
+            if (GameState.getTreeAt(x, y)) {
+                console.log(`Tile (${x}, ${y}) is already occupied.`);
+                return;
+            }
+
+            const tree = GameState.getTreeInventory()[0];
+            if (!tree) {
+                console.log('No trees in inventory to plant.');
+                return;
+            }
+
+            // Fake server call
+            this.mockServerPlantTree(tree.id, x, y)
+                .then((responseTree) => {
+                    if (!responseTree) {
+                        console.log('Server rejected tree planting.');
+                        return;
+                    }
+
+                    const planted = GameState.plantTree(tree.id, x, y);
+                    if (!planted) return;
+
+                    const treeCoords = this.getTileCoordsForTree(x, y);
+                    this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', responseTree.specie + '_4.png');
+
+                    this.selectedTree = GameState.getTreeInventory()[0]; // get next one if any
+
+                    if (this.selectedTree) {
+                        this.previewSprite.setTexture('spritesheet', this.selectedTree.specie + '_4.png');
+                        this.previewSprite.setVisible(false);
+                    } else if (this.previewSprite) {
+                        this.previewSprite?.destroy();
+                        this.previewSprite = null;
+                    }
+                });
+        });
+
+        GameState.getPlantedTrees().forEach(tree => {
+            const treeCoords = this.getTileCoordsForTree(tree.x, tree.y);
+            this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', tree.specie + '_4.png');
+        });
     }
 
     update (time, delta)
     {
-        if (this.input.manager.activePointer.isDown)
-        {
-            const worldPoint = this.input.activePointer.positionToCamera(this.cameras.main);
-            const tile = this.baseLayer.getIsoTileAtWorldXY(worldPoint.x, worldPoint.y);
-            console.log(worldPoint.x, worldPoint.y, tile);
-        }
+
     }
 
     getTileCoordsForTree (tileX, tileY)
@@ -124,7 +196,32 @@ export default class BoardScene extends Phaser.Scene {
         const treeOffsetX = 50;
         const treeOffsetY = -10;
         let tileWorldCoordsXY = this.baseLayer.tileToWorldXY(tileX, tileY);
-        console.log("Planting tree at coords: " + tileWorldCoordsXY.x + ", " + tileWorldCoordsXY.y);
+        // console.log("Planting tree at coords: " + tileWorldCoordsXY.x + ", " + tileWorldCoordsXY.y);
         return { x: tileWorldCoordsXY.x + treeOffsetX, y: tileWorldCoordsXY.y + treeOffsetY };
     }
+
+    mockServerPlantTree(treeId, x, y) {
+        // This fakes a server response after a delay or validation.
+        return new Promise((resolve) => {
+            const tree = GameState.getTreeInventory().find(t => t.id === treeId);
+            if (!tree) {
+                resolve(null);
+                return;
+            }
+
+            // Simulate server-side logic: validate and respond with the updated object
+            const plantedTree = {
+                ...tree,
+                x: x,
+                y: y,
+                plantedAt: Date.now(),
+                lastCollectedAt: Date.now(),
+                yieldRate: GameState.getYieldForLevel(tree.level || 1)
+            };
+
+            // Fake instant server approval
+            resolve(plantedTree);
+        });
+    }
+
 }
