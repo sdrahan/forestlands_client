@@ -11,6 +11,8 @@ export default class BoardScene extends Phaser.Scene {
     selectedTree = null;
     previewSprite = null;
     cameraIsBeingScrolled = false;
+    inventoryPanel = null;
+    inventoryItems = [];
 
     preload() {
         this.load.atlas(
@@ -56,6 +58,9 @@ export default class BoardScene extends Phaser.Scene {
             });
             y++;
         });
+
+        // Create inventory panel
+        this.createInventoryPanel();
 
         this.lastHoveredTile = null;
         this.input.on('pointermove', (pointer) => {
@@ -148,26 +153,27 @@ export default class BoardScene extends Phaser.Scene {
                 return;
             }
 
-            const tree = GameState.getTreeInventory()[0];
-            if (!tree) {
-                console.log('No trees in inventory to plant.');
+            if (!this.selectedTree) {
+                console.log('No tree selected to plant.');
                 return;
             }
 
             // Fake server call
-            this.mockServerPlantTree(tree.id, x, y)
+            this.mockServerPlantTree(this.selectedTree.id, x, y)
                 .then((responseTree) => {
                     if (!responseTree) {
                         console.log('Server rejected tree planting.');
                         return;
                     }
 
-                    const planted = GameState.plantTree(tree.id, x, y);
+                    const planted = GameState.plantTree(this.selectedTree.id, x, y);
                     if (!planted) return;
 
                     const treeCoords = this.getTileCoordsForTree(x, y);
                     this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', responseTree.specie + '_4.png');
 
+                    // Update inventory display and selected tree
+                    this.updateInventoryPanel();
                     this.selectedTree = GameState.getTreeInventory()[0]; // get next one if any
 
                     if (this.selectedTree) {
@@ -184,6 +190,131 @@ export default class BoardScene extends Phaser.Scene {
             const treeCoords = this.getTileCoordsForTree(tree.x, tree.y);
             this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', tree.specie + '_4.png');
         });
+    }
+
+    createInventoryPanel() {
+        // Create panel background
+        const panelX = 10;
+        const panelY = 10;
+        const panelWidth = 120;
+        const panelHeight = 300;
+
+        this.inventoryPanel = this.add.graphics();
+        this.inventoryPanel.fillStyle(0x333333, 0.8);
+        this.inventoryPanel.fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 8);
+        this.inventoryPanel.lineStyle(2, 0x666666);
+        this.inventoryPanel.strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 8);
+        this.inventoryPanel.setScrollFactor(0); // Stay fixed to camera
+
+        // Add title
+        const title = this.add.text(panelX + panelWidth/2, panelY + 20, 'Tree Inventory', {
+            fontSize: '12px',
+            fill: '#ffffff',
+            fontWeight: 'bold'
+        }).setOrigin(0.5, 0).setScrollFactor(0);
+
+        this.updateInventoryPanel();
+    }
+
+    updateInventoryPanel() {
+        // Clear existing inventory items
+        this.inventoryItems.forEach(item => {
+            if (item.sprite) item.sprite.destroy();
+            if (item.text) item.text.destroy();
+            if (item.bg) item.bg.destroy();
+        });
+        this.inventoryItems = [];
+
+        const inventory = GameState.getTreeInventory();
+        const panelX = 10;
+        const startY = 50;
+        const itemHeight = 60;
+
+        inventory.forEach((tree, index) => {
+            const itemY = startY + (index * itemHeight);
+            const isSelected = this.selectedTree && this.selectedTree.id === tree.id;
+
+            // Create item background
+            const itemBg = this.add.graphics();
+            itemBg.fillStyle(isSelected ? 0x4a4a4a : 0x2a2a2a, 0.8);
+            itemBg.fillRoundedRect(panelX + 5, itemY, 110, 55, 4);
+            if (isSelected) {
+                itemBg.lineStyle(2, 0x66aa66);
+                itemBg.strokeRoundedRect(panelX + 5, itemY, 110, 55, 4);
+            }
+            itemBg.setScrollFactor(0);
+            itemBg.setInteractive(new Phaser.Geom.Rectangle(panelX + 5, itemY, 110, 55), Phaser.Geom.Rectangle.Contains);
+
+            // Add tree sprite
+            const treeSprite = this.add.image(panelX + 30, itemY + 20, 'spritesheet', tree.specie + '_4.png');
+            treeSprite.setScale(0.4);
+            treeSprite.setScrollFactor(0);
+
+            // Add tree info text
+            const levelText = tree.level ? `Lv.${tree.level}` : 'Lv.1';
+            const premiumText = tree.isPremium ? '★' : '';
+            const infoText = this.add.text(panelX + 55, itemY + 10, `${levelText}\n${premiumText}`, {
+                fontSize: '10px',
+                fill: tree.isPremium ? '#ffdd44' : '#ffffff'
+            }).setScrollFactor(0);
+
+            // Make item clickable
+            itemBg.on('pointerdown', () => {
+                this.selectTree(tree);
+            });
+
+            itemBg.on('pointerover', () => {
+                if (!isSelected) {
+                    itemBg.clear();
+                    itemBg.fillStyle(0x3a3a3a, 0.8);
+                    itemBg.fillRoundedRect(panelX + 5, itemY, 110, 55, 4);
+                }
+            });
+
+            itemBg.on('pointerout', () => {
+                if (!isSelected) {
+                    itemBg.clear();
+                    itemBg.fillStyle(0x2a2a2a, 0.8);
+                    itemBg.fillRoundedRect(panelX + 5, itemY, 110, 55, 4);
+                }
+            });
+
+            this.inventoryItems.push({
+                bg: itemBg,
+                sprite: treeSprite,
+                text: infoText
+            });
+        });
+
+        // Add "No trees" message if inventory is empty
+        if (inventory.length === 0) {
+            const emptyText = this.add.text(panelX + 60, startY + 20, 'No trees\navailable', {
+                fontSize: '11px',
+                fill: '#888888',
+                align: 'center'
+            }).setOrigin(0.5, 0).setScrollFactor(0);
+
+            this.inventoryItems.push({
+                text: emptyText
+            });
+        }
+    }
+
+    selectTree(tree) {
+        this.selectedTree = tree;
+        this.updateInventoryPanel(); // Refresh to show selection
+
+        // Update preview sprite
+        if (this.previewSprite) {
+            this.previewSprite.destroy();
+        }
+
+        this.previewSprite = this.add.image(0, 0, 'spritesheet', tree.specie + '_4.png');
+        this.previewSprite.setAlpha(0.5);
+        this.previewSprite.setDepth(999);
+        this.previewSprite.setVisible(false);
+
+        console.log(`Selected tree: ${tree.specie}, Level: ${tree.level || 1}`);
     }
 
     update (time, delta)
