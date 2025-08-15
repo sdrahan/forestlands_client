@@ -13,6 +13,7 @@ export default class BoardScene extends Phaser.Scene {
     cameraIsBeingScrolled = false;
     inventoryPanel = null;
     inventoryItems = [];
+    uiCamera = null;
 
     preload() {
         this.load.atlas(
@@ -62,6 +63,16 @@ export default class BoardScene extends Phaser.Scene {
         // Create inventory panel
         this.createInventoryPanel();
 
+        // Create UI camera for inventory panel (separate from main camera)
+        this.uiCamera = this.cameras.add(0, 0, 800, 600);
+        this.uiCamera.setName('ui');
+
+        // Set UI camera to ignore main game objects
+        this.uiCamera.ignore([this.map, this.baseLayer]);
+
+        // Set main camera to ignore UI objects (we'll add this ignore list in createInventoryPanel)
+        const mainCamera = this.cameras.main;
+
         this.lastHoveredTile = null;
         this.input.on('pointermove', (pointer) => {
             const worldPoint = pointer.positionToCamera(this.cameras.main);
@@ -85,6 +96,8 @@ export default class BoardScene extends Phaser.Scene {
             this.previewSprite.setAlpha(0.5);
             this.previewSprite.setDepth(999); // always on top
             this.previewSprite.setVisible(false);
+            // Make sure preview sprite is ignored by UI camera
+            this.uiCamera.ignore(this.previewSprite);
         }
 
         const camera = this.cameras.main;
@@ -170,7 +183,9 @@ export default class BoardScene extends Phaser.Scene {
                     if (!planted) return;
 
                     const treeCoords = this.getTileCoordsForTree(x, y);
-                    this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', responseTree.specie + '_4.png');
+                    const newTreeSprite = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', responseTree.specie + '_4.png');
+                    // Make sure new planted tree is ignored by UI camera
+                    this.uiCamera.ignore(newTreeSprite);
 
                     // Update inventory display and selected tree
                     this.updateInventoryPanel();
@@ -188,7 +203,9 @@ export default class BoardScene extends Phaser.Scene {
 
         GameState.getPlantedTrees().forEach(tree => {
             const treeCoords = this.getTileCoordsForTree(tree.x, tree.y);
-            this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', tree.specie + '_4.png');
+            const treeSprite = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', tree.specie + '_4.png');
+            // Make sure planted trees are ignored by UI camera
+            this.uiCamera.ignore(treeSprite);
         });
     }
 
@@ -204,14 +221,17 @@ export default class BoardScene extends Phaser.Scene {
         this.inventoryPanel.fillRoundedRect(panelX, panelY, panelWidth, panelHeight, 8);
         this.inventoryPanel.lineStyle(2, 0x666666);
         this.inventoryPanel.strokeRoundedRect(panelX, panelY, panelWidth, panelHeight, 8);
-        this.inventoryPanel.setScrollFactor(0); // Stay fixed to camera
 
         // Add title
         const title = this.add.text(panelX + panelWidth/2, panelY + 20, 'Tree Inventory', {
             fontSize: '12px',
             fill: '#ffffff',
             fontWeight: 'bold'
-        }).setOrigin(0.5, 0).setScrollFactor(0);
+        }).setOrigin(0.5, 0);
+
+        // Set up UI camera to only see UI elements
+        const uiObjects = [this.inventoryPanel, title];
+        this.cameras.main.ignore(uiObjects);
 
         this.updateInventoryPanel();
     }
@@ -229,6 +249,7 @@ export default class BoardScene extends Phaser.Scene {
         const panelX = 10;
         const startY = 50;
         const itemHeight = 60;
+        const uiObjects = []; // Track UI objects to ignore in main camera
 
         inventory.forEach((tree, index) => {
             const itemY = startY + (index * itemHeight);
@@ -242,13 +263,11 @@ export default class BoardScene extends Phaser.Scene {
                 itemBg.lineStyle(2, 0x66aa66);
                 itemBg.strokeRoundedRect(panelX + 5, itemY, 110, 55, 4);
             }
-            itemBg.setScrollFactor(0);
             itemBg.setInteractive(new Phaser.Geom.Rectangle(panelX + 5, itemY, 110, 55), Phaser.Geom.Rectangle.Contains);
 
             // Add tree sprite
             const treeSprite = this.add.image(panelX + 30, itemY + 20, 'spritesheet', tree.specie + '_4.png');
             treeSprite.setScale(0.4);
-            treeSprite.setScrollFactor(0);
 
             // Add tree info text
             const levelText = tree.level ? `Lv.${tree.level}` : 'Lv.1';
@@ -256,7 +275,10 @@ export default class BoardScene extends Phaser.Scene {
             const infoText = this.add.text(panelX + 55, itemY + 10, `${levelText}\n${premiumText}`, {
                 fontSize: '10px',
                 fill: tree.isPremium ? '#ffdd44' : '#ffffff'
-            }).setScrollFactor(0);
+            });
+
+            // Track UI objects
+            uiObjects.push(itemBg, treeSprite, infoText);
 
             // Make item clickable
             itemBg.on('pointerdown', () => {
@@ -292,12 +314,16 @@ export default class BoardScene extends Phaser.Scene {
                 fontSize: '11px',
                 fill: '#888888',
                 align: 'center'
-            }).setOrigin(0.5, 0).setScrollFactor(0);
+            }).setOrigin(0.5, 0);
 
+            uiObjects.push(emptyText);
             this.inventoryItems.push({
                 text: emptyText
             });
         }
+
+        // Make main camera ignore all UI objects
+        this.cameras.main.ignore(uiObjects);
     }
 
     selectTree(tree) {
@@ -313,6 +339,8 @@ export default class BoardScene extends Phaser.Scene {
         this.previewSprite.setAlpha(0.5);
         this.previewSprite.setDepth(999);
         this.previewSprite.setVisible(false);
+        // Make sure preview sprite is ignored by UI camera
+        this.uiCamera.ignore(this.previewSprite);
 
         console.log(`Selected tree: ${tree.specie}, Level: ${tree.level || 1}`);
     }
