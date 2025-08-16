@@ -130,8 +130,18 @@ export default class BoardScene extends Phaser.Scene {
             }
 
             const coords = this.getTileCoordsForTree(tile.x, tile.y);
+            const tileType = this.baseLayer.getTileAt(tile.x, tile.y).index;
+            const isPlaceable = this.isTilePlaceable(tileType);
+            
             this.previewSprite.setPosition(coords.x, coords.y);
             this.previewSprite.setVisible(true);
+            
+            // Set color based on whether tile is placeable
+            if (isPlaceable) {
+                this.previewSprite.setTint(0xffffff); // Normal color
+            } else {
+                this.previewSprite.setTint(0xff4444); // Red tint for non-placeable
+            }
         });
 
         this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
@@ -171,6 +181,13 @@ export default class BoardScene extends Phaser.Scene {
                 return;
             }
 
+            // Check if tile is placeable
+            const tileType = this.baseLayer.getTileAt(x, y).index;
+            if (!this.isTilePlaceable(tileType)) {
+                console.log(`Cannot place tree on tile type ${tileType} at (${x}, ${y}).`);
+                return;
+            }
+
             // Fake server call
             this.mockServerPlantTree(this.selectedTree.id, x, y)
                 .then((responseTree) => {
@@ -206,6 +223,14 @@ export default class BoardScene extends Phaser.Scene {
             const treeSprite = this.add.image(treeCoords.x, treeCoords.y, 'spritesheet', tree.specie + '_4.png');
             // Make sure planted trees are ignored by UI camera
             this.uiCamera.ignore(treeSprite);
+        });
+
+        // Add keyboard input handling for Esc key
+        this.input.keyboard.on('keydown-ESC', () => {
+            if (this.selectedTree) {
+                this.deselectTree();
+                console.log('Tree deselected');
+            }
         });
     }
 
@@ -345,6 +370,15 @@ export default class BoardScene extends Phaser.Scene {
         console.log(`Selected tree: ${tree.specie}, Level: ${tree.level || 1}`);
     }
 
+    deselectTree() {
+        this.selectedTree = null;
+        if (this.previewSprite) {
+            this.previewSprite.destroy();
+            this.previewSprite = null;
+        }
+        this.updateInventoryPanel();
+    }
+
     update (time, delta)
     {
 
@@ -381,6 +415,10 @@ export default class BoardScene extends Phaser.Scene {
             // Fake instant server approval
             resolve(plantedTree);
         });
+    }
+
+    isTilePlaceable(tileType) {
+        return tileType === 2 || tileType === 0;
     }
 
 }
